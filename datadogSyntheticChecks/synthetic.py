@@ -11,7 +11,12 @@ class Ddsynthetics:
         self.app_url = API_URL
 
         fields = {
-            "check":{"required":True,"type":"dict"},
+            "check":{"required":True,"type":"dict", "options":{
+              "url":{"required":True,"type":"str"},
+              "content_match": {"required":False,"type":"str"},
+              "header": {"required":False,"type":"str"},
+              "headerType": {"required":False,"type":"str"}
+            }},
             "dd_api_key":{"required":True,"type":"str"},
             "dd_app_key":{"required":True,"type":"str"},
             "prefix":{"required":True,"type":"str"}
@@ -78,11 +83,11 @@ class Ddsynthetics:
 
     def create_synthetic(self):
 
-        assertions = ddAssertions()
+        assertions = self.ddAssertions()
         synthRequest = {'method': 'GET', 'url': 'https://' + self.target_url}
         synthOptions = {'tick_every': 300,'min_location_failed': 3, 'min_failure_duration': 180, 'follow_redirects': True,'retry':{'count': 2, 'interval': 60000}}
         locations = ['aws:sa-east-1','aws:us-east-2','aws:us-west-1','aws:us-west-2','aws:ca-central-1']
-        message = ddMessage()
+        message = self.ddMessage()
         ddtags = []
 
         data = {'config':{'assertions': assertions,'request': synthRequest}, 'options': synthOptions, 'locations': locations, 'name': self.testName, 'message': message, 'type': 'api', 'tags': ddtags}
