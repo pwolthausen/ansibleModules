@@ -1,0 +1,13 @@
+- name:
+  synthetic:
+    check:       #Dict of assertions for the check
+    dd_api_key:  #String, API key from Datadog
+    dd_app_key:  #String, APP key from Datadog
+    prefix:      #String, Prefix used for the test name. Will appear within square brackets
+
+vars:
+  check:
+    url: #URL to be checked
+    content_match: #OPTIONAL A string of text that should appear somewhere in the body of the HTML Page
+    headerType: #OPTIONAL String, type of header to look for. Must be used with 'header'
+    header: #OPTIONAL String, content of the heeader. Must be used with 'headerType'
