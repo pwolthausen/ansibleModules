@@ -11,6 +11,7 @@ class Ddsynthetics:
         self.app_url = API_URL
 
         fields = {
+            "name":{"required":False,"type":"str"},
             "check":{"required":True,"type":"dict", "options":{
               "url":{"required":True,"type":"str"},
               "content_match": {"required":False,"type":"str"},
@@ -28,7 +29,10 @@ class Ddsynthetics:
         self.app_key = self.module.params.get("dd_app_key")
         self.client = self.module.params.get("prefix")
         self.target_url = self.checkDetails['url']
-        self.testName = '[' + self.client + '] Test on ' + self.target_url[:24]
+        try:
+            self.testName = self.module.params.get("name")
+        except:
+            self.testName = '[' + self.client + '] Test on ' + self.target_url[:24]
 
         self.session = requests.Session()
         self.session.headers.update({
