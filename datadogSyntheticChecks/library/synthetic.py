@@ -16,7 +16,8 @@ class Ddsynthetics:
               "url":{"required":True,"type":"str"},
               "content_match": {"required":False,"type":"str"},
               "header": {"required":False,"type":"str"},
-              "headerType": {"required":False,"type":"str"}
+              "headerType": {"required":False,"type":"str"},
+              "check_certificate_expiration": {"required":False,"type":"bool"},
             }},
             "dd_api_key":{"required":True,"type":"str"},
             "dd_app_key":{"required":True,"type":"str"},
@@ -29,6 +30,7 @@ class Ddsynthetics:
         self.app_key = self.module.params.get("dd_app_key")
         self.client = self.module.params.get("prefix")
         self.target_url = self.checkDetails['url']
+        self.sslCheck = self.checkDetails['check_certificate_expiration']
         try:
             self.testName = '[' + self.client + ']' + self.module.params.get("name")
         except:
@@ -67,20 +69,25 @@ class Ddsynthetics:
 
         self.create_synthetic()
 
+        if self.sslCheck == True:
+            self.createSslSynthetic()
+
+        self.module.exit_json(**self.json_output)
+
     def ddAssertions(self):
         assertionsList = [{'operator': 'is', 'type': 'statusCode', 'target': 200},{'operator': 'lessThan', 'target': 10000, 'type': 'responseTime'}]
-        if 'content_match' in self.checkDetails:
+        if self.checkDetails['content_match']:
             content = {'type': 'body', 'operator': 'contains', 'target': self.checkDetails['content_match']}
             assertionsList.append(content)
 
-        if 'header' in self.checkDetails:
+        if self.checkDetails['header']:
             headerAssert = {'type': 'header', 'operator': 'contains', 'property': self.checkDetails['headerType'], 'target': self.checkDetails['header']}
             assertionsList.append(headerAssert)
 
         return(assertionsList)
 
 ##Currently under utlisized, will elaborate if notiications are deemed optional
-    def ddMessage():
+    def ddMessage(self):
         ddmessage = self.target_url + ' is down @Pagerduty'
 
         return(ddmessage)
@@ -102,11 +109,34 @@ class Ddsynthetics:
             self.json_output['check created'] = True
             self.json_output['changed'] = True
 
-        self.module.exit_json(**self.json_output)
+        else:
+            self.json_output['failed API call'] = body
+
+
+
+    def createSslSynthetic(self):
+
+        assertions = [{'type':'certificate','operator':'isInMoreThan','target': 60}]
+        synthRequest = {'host': 'https://' + self.target_url,'port': 443}
+        locations = ['aws:sa-east-1','aws:us-east-2','aws:us-west-1','aws:us-west-2','aws:ca-central-1']
+        synthOptions = {'tick_every': 300,'min_location_failed': 3, 'min_failure_duration': 180,'retry':{'count': 2, 'interval': 60000}}
+        message = 'Certificate for ' + self.target_url + ' will expire in 60 days or less'
+        ddtags = []
+        sslTestName = '[' + self.client + ']' + 'SSL check on ' + self.target_url
+
+        data = {'config':{'assertions': assertions,'request': synthRequest}, 'options': synthOptions,'locations': locations, 'name': self.testName, 'message': message, 'type': 'api', 'subtype':'ssl', 'tags': ddtags}
+        body = json.dumps(data)
+
+        post = self.session.post(self.app_url, data = body)
+        if post.status_code == 200:
+            self.json_output['SSL check created'] = True
+        else:
+            self.json_output['failed SSL call'] = body
 
 def main():
     synthCheck = Ddsynthetics()
     synthCheck.check_synthetics()
+
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@
       content_match:  #OPTIONAL A string of text that should appear somewhere in the body of the HTML Page
       headerType:     #OPTIONAL String, type of header to look for. Must be used with 'header'
       header:         #OPTIONAL String, content of the heeader. Must be used with 'headerType'
+      check_certificate_expiration: #OPTIONAL boolean, if set to true, will create a synthetic check for the SSL cert
     dd_api_key:  #String, API key from Datadog
     dd_app_key:  #String, APP key from Datadog
     prefix:      #String, Prefix used for the test name. Will appear within square brackets
