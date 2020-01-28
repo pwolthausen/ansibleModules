@@ -30,7 +30,7 @@ class Ddsynthetics:
         self.client = self.module.params.get("prefix")
         self.target_url = self.checkDetails['url']
         try:
-            self.testName = self.module.params.get("name")
+            self.testName = '[' + self.client + ']' + self.module.params.get("name")
         except:
             self.testName = '[' + self.client + '] Test on ' + self.target_url[:24]
 
