@@ -1,7 +1,7 @@
 - name:
   synthetic:
-    name:        #OPTIONAL String, name of the synthetic check
     check:       #Dict of assertions for the check
+      name:           #OPTIONAL String, name of the synthetic check
       url:            #URL to be checked (module will append https:// to the url provided)
       content_match:  #OPTIONAL A string of text that should appear somewhere in the body of the HTML Page
       headerType:     #OPTIONAL String, type of header to look for. Must be used with 'header'

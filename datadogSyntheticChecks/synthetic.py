@@ -11,8 +11,8 @@ class Ddsynthetics:
         self.app_url = API_URL
 
         fields = {
-            "name":{"required":False,"type":"str"},
             "check":{"required":True,"type":"dict", "options":{
+              "name":{"required":False,"type":"str"},
               "url":{"required":True,"type":"str"},
               "content_match": {"required":False,"type":"str"},
               "header": {"required":False,"type":"str"},
