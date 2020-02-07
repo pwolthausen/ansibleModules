@@ -17,15 +17,17 @@ class Ddsynthetics:
               "content_match": {"required":False,"type":"str"},
               "header": {"required":False,"type":"str"},
               "headerType": {"required":False,"type":"str"},
-              "check_certificate_expiration": {"required":False,"type":"bool"},
+              "check_certificate_expiration": {"required":False,"type":"bool","default":False}
             }},
             "dd_api_key":{"required":True,"type":"str"},
             "dd_app_key":{"required":True,"type":"str"},
-            "prefix":{"required":True,"type":"str"}
+            "prefix":{"required":True,"type":"str"},
+            "nofificationChannel": {"required":False, "type":"str"}
         }
 
         self.module = AnsibleModule(argument_spec=fields)
         self.checkDetails = self.module.params.get("check")
+        self.notificationChannel = self.module.params.get('notificationChannel')
         self.api_key = self.module.params.get("dd_api_key")
         self.app_key = self.module.params.get("dd_app_key")
         self.client = self.module.params.get("prefix")
@@ -75,7 +77,7 @@ class Ddsynthetics:
         self.module.exit_json(**self.json_output)
 
     def ddAssertions(self):
-        assertionsList = [{'operator': 'is', 'type': 'statusCode', 'target': 200},{'operator': 'lessThan', 'target': 10000, 'type': 'responseTime'}]
+        assertionsList = [{'operator': 'is', 'type': 'statusCode', 'target': 200},{'operator': 'lessThan', 'target': 20000, 'type': 'responseTime'}]
         if self.checkDetails['content_match']:
             content = {'type': 'body', 'operator': 'contains', 'target': self.checkDetails['content_match']}
             assertionsList.append(content)
@@ -88,7 +90,7 @@ class Ddsynthetics:
 
 ##Currently under utlisized, will elaborate if notiications are deemed optional
     def ddMessage(self):
-        ddmessage = self.target_url + ' is down @Pagerduty'
+        ddmessage = self.target_url + ' is down @' + self.notificationChannel
 
         return(ddmessage)
 
@@ -120,7 +122,7 @@ class Ddsynthetics:
         synthRequest = {'host': 'https://' + self.target_url,'port': 443}
         locations = ['aws:sa-east-1','aws:us-east-2','aws:us-west-1','aws:us-west-2','aws:ca-central-1']
         synthOptions = {'tick_every': 300,'min_location_failed': 3, 'min_failure_duration': 180,'retry':{'count': 2, 'interval': 60000}}
-        message = 'Certificate for ' + self.target_url + ' will expire in 60 days or less'
+        message = 'Certificate for ' + self.target_url + ' will expire in 60 days or less @' + self.notificationChannel
         ddtags = []
         sslTestName = '[' + self.client + ']' + 'SSL check on ' + self.target_url
 
