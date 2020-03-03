@@ -17,17 +17,16 @@ class Ddsynthetics:
               "content_match": {"required":False,"type":"str"},
               "header": {"required":False,"type":"str"},
               "headerType": {"required":False,"type":"str"},
-              "check_certificate_expiration": {"required":False,"type":"bool","default":False}
+              "check_certificate_expiration": {"required":False,"type":"bool","default":False},
+              "nofificationChannel": {"required":False, "type":"str"}
             }},
             "dd_api_key":{"required":True,"type":"str"},
             "dd_app_key":{"required":True,"type":"str"},
-            "prefix":{"required":True,"type":"str"},
-            "nofificationChannel": {"required":False, "type":"str"}
+            "prefix":{"required":True,"type":"str"}
         }
 
         self.module = AnsibleModule(argument_spec=fields)
         self.checkDetails = self.module.params.get("check")
-        self.notificationChannel = self.module.params.get('notificationChannel')
         self.api_key = self.module.params.get("dd_api_key")
         self.app_key = self.module.params.get("dd_app_key")
         self.client = self.module.params.get("prefix")
@@ -47,22 +46,25 @@ class Ddsynthetics:
 
         self.json_output = {
             'check name': self.testName,
-            'check removed': False,
+            'check changed': False,
             'check created': False,
             'changed': False
         }
 
+#Fetches a list of all current synthetic checks
     def get_synthetics(self):
         list = self.session.get(self.app_url)
         return list.json()
+
 
     def delete_synthetics(self,pid):
         delete_list = {'public_ids': [pid]}
         delete_body = json.dumps(delete_list)
         deleteRequest = self.session.post(self.app_url + '/delete', data = delete_body)
         if deleteRequest.status_code == 200:
-            self.json_output['check removed'] = True
+            self.json_output['check changed'] = True
 
+##Verifies if the check already exists.
     def check_synthetics(self):
         current_checks = self.get_synthetics()
         for synthetic_test in current_checks['tests']:
@@ -76,6 +78,7 @@ class Ddsynthetics:
 
         self.module.exit_json(**self.json_output)
 
+## Put together the assertions required to create a check
     def ddAssertions(self):
         assertionsList = [{'operator': 'is', 'type': 'statusCode', 'target': 200},{'operator': 'lessThan', 'target': 20000, 'type': 'responseTime'}]
         if self.checkDetails['content_match']:
@@ -90,7 +93,7 @@ class Ddsynthetics:
 
 ##Currently under utlisized, will elaborate if notiications are deemed optional
     def ddMessage(self):
-        ddmessage = self.target_url + ' is down @' + self.notificationChannel
+        ddmessage = self.target_url + ' is down @' + self.checkDetails['notificationChannel']
 
         return(ddmessage)
 
@@ -115,7 +118,7 @@ class Ddsynthetics:
             self.json_output['failed API call'] = body
 
 
-
+##Creates a synthetic check for SSL certification validity. Only triggered if sslCheck is True
     def createSslSynthetic(self):
 
         assertions = [{'type':'certificate','operator':'isInMoreThan','target': 60}]

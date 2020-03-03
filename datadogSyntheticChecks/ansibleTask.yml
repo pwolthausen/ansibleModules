@@ -7,7 +7,7 @@
       headerType:     #OPTIONAL String, type of header to look for. Must be used with 'header'
       header:         #OPTIONAL String, content of the heeader. Must be used with 'headerType'
       check_certificate_expiration: #OPTIONAL boolean, if set to true, will create a synthetic check for the SSL cert
+      nofificationChannel:          #OPTIONAL, String, the name of a notification channel configured in datadog
     dd_api_key:  #String, API key from Datadog
     dd_app_key:  #String, APP key from Datadog
     prefix:      #String, Prefix used for the test name. Will appear within square brackets
-    nofificationChannel:          #OPTIONAL, String, the name of a notification channel configured in datadog
