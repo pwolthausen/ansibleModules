@@ -9,7 +9,7 @@ class Ddsynthetics:
 
     def __init__(self):
         self.app_url = API_URL
-
+        ##Sets the fields that are imported from ansible
         fields = {
             "check":{"required":True,"type":"dict", "options":{
               "name":{"required":False,"type":"str"},
@@ -18,19 +18,22 @@ class Ddsynthetics:
               "header": {"required":False,"type":"str"},
               "headerType": {"required":False,"type":"str"},
               "check_certificate_expiration": {"required":False,"type":"bool","default":False},
-              "nofificationChannel": {"required":False, "type":"str"}
+              "nofificationChannel": {"required":False, "type":"str"},
+              "tags": {"required":False, "type":"list"}
             }},
             "dd_api_key":{"required":True,"type":"str"},
             "dd_app_key":{"required":True,"type":"str"},
             "prefix":{"required":True,"type":"str"}
         }
 
+        ##Set the variables to be used in the function
         self.module = AnsibleModule(argument_spec=fields)
         self.checkDetails = self.module.params.get("check")
         self.api_key = self.module.params.get("dd_api_key")
         self.app_key = self.module.params.get("dd_app_key")
         self.client = self.module.params.get("prefix")
         self.target_url = self.checkDetails['url']
+        self.tags = self.checkDetails['tags']
         self.sslCheck = self.checkDetails['check_certificate_expiration']
         try:
             self.testName = '[' + self.client + ']' + self.module.params.get("name")
@@ -56,7 +59,7 @@ class Ddsynthetics:
         list = self.session.get(self.app_url)
         return list.json()
 
-
+#Deletes any eisting checks that are being recreated or updated. Otherwise, the datadog API will just add duplicate checks
     def delete_synthetics(self,pid):
         delete_list = {'public_ids': [pid]}
         delete_body = json.dumps(delete_list)
@@ -104,7 +107,7 @@ class Ddsynthetics:
         synthOptions = {'tick_every': 300,'min_location_failed': 3, 'min_failure_duration': 180, 'follow_redirects': True,'retry':{'count': 2, 'interval': 60000}}
         locations = ['aws:sa-east-1','aws:us-east-2','aws:us-west-1','aws:us-west-2','aws:ca-central-1']
         message = self.ddMessage()
-        ddtags = []
+        ddtags = self.tags
 
         data = {'config':{'assertions': assertions,'request': synthRequest}, 'options': synthOptions, 'locations': locations, 'name': self.testName, 'message': message, 'type': 'api', 'tags': ddtags}
         body = json.dumps(data)
@@ -126,7 +129,7 @@ class Ddsynthetics:
         locations = ['aws:sa-east-1','aws:us-east-2','aws:us-west-1','aws:us-west-2','aws:ca-central-1']
         synthOptions = {'tick_every': 300,'min_location_failed': 3, 'min_failure_duration': 180,'retry':{'count': 2, 'interval': 60000}}
         message = 'Certificate for ' + self.target_url + ' will expire in 60 days or less @' + self.notificationChannel
-        ddtags = []
+        ddtags = self.tags
         sslTestName = '[' + self.client + ']' + 'SSL check on ' + self.target_url
 
         data = {'config':{'assertions': assertions,'request': synthRequest}, 'options': synthOptions,'locations': locations, 'name': self.testName, 'message': message, 'type': 'api', 'subtype':'ssl', 'tags': ddtags}
