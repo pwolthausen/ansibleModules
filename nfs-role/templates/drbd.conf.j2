@@ -1,0 +1,41 @@
+include "drbd.d/global_common.conf";
+include "drbd.d/*.res";
+
+resource r0 {
+
+ protocol C;
+ incon-degr-cmd "halt -f";
+
+ startup {
+    degr-wfc-timeout 120;    # 2 minutes.
+  }
+
+  disk {
+    on-io-error   detach;
+  }
+
+  net {
+
+  }
+
+  syncer {
+
+    rate 10M;
+
+    group 1;
+
+    al-extents 257;
+  }
+ on {{ server1 }} {
+   device     /dev/drbd0;        #
+   disk       {{ nfs_device }}2;
+   address    {{ server1IP }}:7788;
+   meta-disk  {{ nfs_device }}7[0];
+  }
+
+  on {{ server2 }} {
+    device     /dev/drbd0;        #
+    disk       {{ nfs_device }}2;
+    address    {{ server2IP }}:7788;
+    meta-disk  {{ nfs_device }}7[0];
+   }

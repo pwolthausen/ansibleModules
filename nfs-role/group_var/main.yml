@@ -1,0 +1,12 @@
+
+
+nfs_device: dev/xvdb                ##full device name you want to partition
+domain:                             ## domain for the FQDN of the servers
+          ##### Do not use {{ ansible_hostname}} for either of these as it will not configure DRBD correctly
+server1: coo-r1-dev-nfs     ## Hostname of the first server (uname -n)
+server1IP:
+
+server2: coo-t2-dev-nfs
+server2IP:
+
+virtualIP:

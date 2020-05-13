@@ -1,0 +1,6 @@
+logfacility     local0
+keepalive 2
+#deadtime 30 # USE THIS!!!
+deadtime 10
+bcast   eth0
+node {{ server1 }} {{ server2 }}

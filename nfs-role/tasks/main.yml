@@ -1,0 +1,111 @@
+- name: Prepare partitions
+  block:
+  - name: install parted
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+    loop:
+      - parted
+      - ntp
+      - ntpdate
+      - nfs-kernel-server
+      - drbd8-utils
+      - heartbeat
+
+  - name: create metedata partition
+    parted:
+      device: "{{ nfs_device }}"
+      number: 1
+      part_end: 150MB
+      state: present
+
+  - name: create data partition
+    parted:
+      device: "{{ nfs_device}}"
+      number: 2
+      part_start: 150MB
+      state: present
+
+- name: remove the system bootup links for NFS
+  block:
+  - command:
+      cmd: update-rc.d -f nfs-kernel-server remove
+  - command:
+      cmd: update-rc.d -f nfs-common remove
+
+- name: configure DRDB
+  block:
+  - name: Export data directory
+    template:
+      src: /templates/export.j2
+      dest: /etc/exports
+
+  - name: configure drdb.conf
+    template:
+      src: templates/drdb.conf.j2
+      dest: /etc/drdb.conf
+      mode: 0644
+
+  - name: load DRDB
+    command: modprobe drdb
+
+  - name: start BRDB
+    command: drbdadm up all
+
+  - name: Make a server primary
+    delegate_to: "{{ server1 }}.{{ domain }}"
+    command: drbdadm -- --do-what-I-say primary all
+
+  - name: Sync DRDB
+    delegate_to: "{{ server1 }}.{{ domain }}"
+    command: drbdadm -- connect all
+
+
+- name: Further NFS configuration
+  block:
+  - name: create data directory
+    file:
+      path: /data
+      state: directory
+
+  - name: move nfs info to /data
+    delegate_to: "{{ server1 }}.{{ domain }}"
+    block:
+    - command: "{{ item }}"
+    loop:
+      - "mount -t ext4 /dev/drbd0 /data"
+      - "mv /var/lib/nfs/ /data/"
+      - "ln -s /data/nfs/ /var/lib/nfs"
+      - "mkdir /data/export"
+      - "umount /data"
+
+  - name: link nfs into to proper directory
+    command: "{{ item }}"
+    loop:
+    - "rm -fr /var/lib/nfs/"
+    - "ln -s /data/nfs/ /var/lib/nfs"
+
+- name: Configure heartbeat
+  block:
+  - name: configure ha.cf
+    template:
+      src: templates/ha.cf.j2
+      dest: /etc/heartbeat/ha.cf
+
+  - name: configure haresources
+    template:
+      src: templates/haresources.j2
+      dest: /etc/heartbeat/haresources
+
+  - name: configure authkeys
+    template:
+      src: templates/authkeys.j2
+      dest: /etc/heartbeat/authkeys
+      owner: root
+      mode: 600
+
+- name: start DRBD and heartbeat
+  block:
+  - command: /etc/init.d/drbd start
+  - command: /etc/init.d/heartbeat start
