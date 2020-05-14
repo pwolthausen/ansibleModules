@@ -17,6 +17,7 @@ class Ddsynthetics:
               "content_match": {"required":False,"type":"str"},
               "header": {"required":False,"type":"str"},
               "headerType": {"required":False,"type":"str"},
+              "check_http": {"required":True,"default":True},
               "check_certificate_expiration": {"required":False,"type":"bool","default":False},
               "nofificationChannel": {"required":False, "type":"str"},
               "tags": {"required":False, "type":"list"}
@@ -34,6 +35,7 @@ class Ddsynthetics:
         self.client = self.module.params.get("prefix")
         self.target_url = self.checkDetails['url']
         self.tags = self.checkDetails['tags']
+        self.httpCheck = self.checkDetails['check_http']
         self.sslCheck = self.checkDetails['check_certificate_expiration']
         try:
             self.testName = '[' + self.client + ']' + self.module.params.get("name")
@@ -74,7 +76,8 @@ class Ddsynthetics:
             if self.testName in synthetic_test['name']:
                 self.delete_synthetics(synthetic_test['public_id'])
 
-        self.create_synthetic()
+        if self.httpCheck == True:
+            self.create_synthetic()
 
         if self.sslCheck == True:
             self.createSslSynthetic()

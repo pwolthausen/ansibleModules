@@ -6,6 +6,7 @@
       content_match:  #OPTIONAL A string of text that should appear somewhere in the body of the HTML Page
       headerType:     #OPTIONAL String, type of header to look for. Must be used with 'header'
       header:         #OPTIONAL String, content of the heeader. Must be used with 'headerType'
+      check_http:     #Defaults to True, set to False to create only SSL
       check_certificate_expiration: #OPTIONAL boolean, if set to true, will create a synthetic check for the SSL cert
       nofificationChannel:          #OPTIONAL, String, the name of a notification channel configured in datadog
     dd_api_key:  #String, API key from Datadog
