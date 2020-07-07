@@ -1,0 +1,10 @@
+- name:
+  awsLifecycle:
+    name:        #Required, String. name of the lifecycle policy (-daily-backup will be appended)
+    RoleArn:     #Required, String. ARN of AWS role to be used for Policy
+    retention:   #Required, int. Number of days a snapshot should be kept.
+    region:      #Required, string. AWS region where policy will run, should be same as targets
+    tagKey:      #OPTIONAL, string. Key of a tag present on target hosts. Defaults to "environment"
+    tagValue:    #OPTIONAL, string. Value of the tag present on target hosts. Defaults to "prod"
+    aws_key:     #Required, string. Api key for aws account that will create the policy
+    aws_secret:  #Required, string. Secret key for aws account.
