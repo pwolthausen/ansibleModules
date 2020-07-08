@@ -63,9 +63,10 @@ class AwsLifecycle:
                 ExecutionRoleArn=self.RoleArn,
                 Description=self.Description,
                 State='ENABLED',
-                Tags={
-                    self.key: self.value
-                },
+                ##Tags don't work in certain regions, this is limitation of AWS API. Removing the tags sections ensures this runs globally
+                # Tags={
+                #     self.key: self.value
+                # },
                 PolicyDetails={
                     'PolicyType': 'EBS_SNAPSHOT_MANAGEMENT',
                     'ResourceTypes': ['INSTANCE'],
