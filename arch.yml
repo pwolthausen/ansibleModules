@@ -1,3 +1,5 @@
+## small playbook to configure an Arch workstation
+
 ---
 - hosts: localhost
   vars_prompt:
