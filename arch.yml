@@ -1,0 +1,71 @@
+---
+- hosts: localhost
+  vars_prompt:
+    - name: "ansible_become_pass"
+      prompt: "Enter sudo password"
+      private: yes
+  tasks:
+    - name: Install packages from package manager
+      become: true
+      block:
+        - name: Update pacman
+          pacman:
+            update_cache: yes
+            upgrade: yes
+
+        - name: Install arch packages
+          pacman:
+            name:
+              - git
+              - terminator
+              - atom
+              - remmina
+              - rdesktop
+              - terraform
+              - kubectl
+              - git-crypt
+              - pamac
+            state: present
+
+    - name: ensure pamac is installed and ready to use
+      become: true
+      block:
+        - name: Ensure EnableAUR
+          replace:
+            path: /etc/pamac.conf
+            regexp: "^#EnableAUR$"
+            replace: "EnableAUR"
+
+        - name: ensure CheckAURUpdates
+          replace:
+            path: /etc/pamac.conf
+            regexp: "^#CheckAURUpdates$"
+            replace: "CheckAURUpdates"
+
+        - name: ensure CheckAURVCSUpdates
+          replace:
+            path: /etc/pamac.conf
+            regexp: "^#CheckAURVCSUpdates$"
+            replace: "CheckAURVCSUpdates"
+
+    - name: Install packages from AURs w/ pamac
+      block:
+        - name: install pexpect for expect module
+          pip:
+            name: pexpect>=3.3
+            state: present
+
+        - name: install google-cloud-sdk
+          expect:
+            command: pamac install "{{ item }}"
+            responses:
+              (.*)from AUR ?(.*): y
+              (.*)Edit build(.*): n
+              (.*)Apply transaction(.*): y
+              (.*)Password(.*): "{{ansible_become_pass }}"
+            timeout: 120
+          with_items:
+            - google-cloud-sdk
+            - slack-desktop
+            - zoom
+            - forticlientsslvpn
