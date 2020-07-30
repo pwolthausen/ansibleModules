@@ -22,7 +22,7 @@
               - terminator
               - atom
               - remmina
-              - rdesktop
+              - freerdp
               - terraform
               - kubectl
               - git-crypt
@@ -30,7 +30,7 @@
             state: present
 
         - name: install nvidia drivers
-          command: 'mhwd -a pci nonfree 0300' 
+          command: 'mhwd -a pci nonfree 0300'
 
     - name: ensure pamac is installed and ready to use
       become: true
