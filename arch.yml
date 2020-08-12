@@ -6,6 +6,8 @@
     - name: "ansible_become_pass"
       prompt: "Enter sudo password"
       private: yes
+    - name: "user"
+      prompt: "Primary local user"
   tasks:
     - name: Install packages from package manager
       become: true
@@ -27,6 +29,7 @@
               - kubectl
               - git-crypt
               - pamac
+              - docker
             state: present
 
         - name: install nvidia drivers
@@ -74,3 +77,15 @@
             - slack-desktop
             - zoom
             - forticlientsslvpn
+
+    - name: copy over bash and ssh files
+      block:
+        - template:
+            src: bashrc.j2
+            dest: /home/{{ user }}/.bashrc
+        - template:
+            src: bashaliases.j2
+            dest: /home/{{ user }}/.bash_aliases
+        - template:
+            src: sshconfig.j2
+            dest: /home/{{ user }}/.ssh/config
