@@ -63,7 +63,7 @@
             name: pexpect>=3.3
             state: present
 
-        - name: install "{{ item }}"
+        - name: install AURs
           expect:
             command: pamac install "{{ item }}"
             responses:
