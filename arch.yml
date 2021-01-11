@@ -21,6 +21,7 @@
           pacman:
             name:
               - terminator
+              - vim
               - atom
               - remmina
               - freerdp
