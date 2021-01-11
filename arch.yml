@@ -30,6 +30,7 @@
               - git-crypt
               - pamac
               - docker
+              - discord
             state: present
 
         - name: install nvidia drivers
