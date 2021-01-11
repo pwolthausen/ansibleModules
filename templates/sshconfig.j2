@@ -7,10 +7,10 @@ Host *
    IdentityFile ~/.ssh/id_rsa
    IdentitiesOnly yes
    StrictHostKeyChecking no
-   user pwolthausen
+   user {{ user }}
 
 
 Host bastion
    hostname map.cloudops.net
    IdentityFile ~/.ssh/id_rsa
-   user pwolthausen
+   user {{ user }}
