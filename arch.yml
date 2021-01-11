@@ -20,7 +20,6 @@
         - name: Install arch packages
           pacman:
             name:
-              - git
               - terminator
               - atom
               - remmina
@@ -77,6 +76,9 @@
             - slack-desktop
             - zoom
             - forticlientsslvpn
+            - rke
+            - kops
+            - teams
 
     - name: copy over bash and ssh files
       block:
